@@ -1,0 +1,92 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Feb 16 15:17:21 2017
+
+@author: BOUEHNNI
+"""
+#import sys
+import numpy as np
+from DataAccess import DataAccessFHB
+from Services import WeightedKNN
+
+class FHBPrediction(object):
+    def __init__(self):
+        self.fhbDataAccess = DataAccessFHB.DataAccessFHB()
+        self.fhbTrainingSet = self.fhbDataAccess.getFHBtrainingSet()
+        self.classifier = WeightedKNN.WeightedKNN(10,self.fhbTrainingSet)
+
+# on prédit la fusariose pour chaque parcelle contenant le blé 
+# cette fonction prend en entrée la liste des parcelles contenant le blé
+    def predictFHB(self, cropProduction):     
+        # getFHBmesures() retourne mesures[] d'une parcelle ordonnées par date
+        # c'est une matrice qui contient 3 colonnes 
+        # 1. Moyenne de la temperature
+        # 2. Moyenne de l'humidité
+        # 3. Les précipitations
+        self.mesures = self.fhbDataAccess.getFHBmesures(cropProduction)
+        print self.mesures
+
+        vectCar = self.calculerVCfhb()
+        #vectCar = self.classifier.normalizeVect(vectCar)
+        print vectCar, "vecteur"
+
+        neighbors = self.classifier.kNN(vectCar)
+        
+        self.fhbDataAccess.addFHBprediction(vectCar, neighbors,cropProduction)
+        print "fhb predicted"
+        return vectCar[-1]
+        
+    def calculerVCfhb(self):
+        # calculer le vecteur caractéristique qui correspond à la fusariose de blé
+        
+        periodTemp = self.calculateTempDuration() # calculer la durée de la période dans laquelle
+                                                  # température entre 9 et 30°C
+        aveHum = np.mean(self.mesures[1]) # calculer l'humidité relative moyenne
+        periodRain = self.calculateRainDuration() # calculer la durée de la période des précipitations
+        
+        # construire un vecteur caractéristique de 3 variables
+        vectCar = [periodTemp,aveHum,periodRain]
+        print vectCar
+            
+        return vectCar
+    
+    def calculateTempDuration(self):
+        duration = 0
+        for x in range(len(self.mesures[0])):
+            if ( self.mesures[0][x] > 9 and self.mesures[0][x] < 30 ):
+                duration+=1
+
+        return duration
+    
+    def calculateRainDuration(self):
+
+        duration = 0
+        for x in range(len(self.mesures[2])):
+            if ( self.mesures[2][x] >= 0.1 ):
+                duration+=1
+    
+        return duration
+
+    # Cette fonction reçoit le signal (positif ou négatif) du client 
+    # et met à jour l'ensemble d'apprentissage    
+    def feedbackFHB(self, feedbackID, crop_prediction_id, typeFeedback, date):  # feedback=1 : prediction correcte, 
+                                                    # feedback=0 : prediction fausse
+	    # récupérer la prediction
+        prediction=self.fhbDataAccess.getFHBprediction(crop_prediction_id, date) 
+
+	    # récupérer les identifiants des voisins de la table voisinage
+        neighbors=self.fhbDataAccess.getFHBpredictionNeighbours(prediction[0])
+        if typeFeedback==0 :# prédcition fausse
+            # pénaliser les voisins
+            self.fhbDataAccess.penalizeNeighbors(neighbors)
+            
+        else: # prediction correcte
+            self.fhbDataAccess.rewardNeighbors(neighbors) #récompenser les voisins
+            # ajouter la prédiction correcte à l'ensemble d'apprentisssage
+            self.fhbDataAccess.addCorrectPrediction(prediction)
+        
+
+    # mettre à jour les paramètres du classifieur kNN prendre en considération le feedback
+    def updatekNN(self):
+        self.fhbTrainingSet = self.fhbDataAccess.getFHBtrainingSet()
+        self.classifier.updateTrainingSet(self.fhbTrainingSet)
