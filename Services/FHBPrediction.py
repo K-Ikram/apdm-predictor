@@ -13,7 +13,7 @@ class FHBPrediction(object):
     def __init__(self):
         self.fhbDataAccess = DataAccessFHB.DataAccessFHB()
         self.fhbTrainingSet = self.fhbDataAccess.getFHBtrainingSet()
-        self.classifier = WeightedKNN.WeightedKNN(10,self.fhbTrainingSet)
+        self.classifier = WeightedKNN.WeightedKNN(50,self.fhbTrainingSet)
 
 # on prédit la fusariose pour chaque parcelle contenant le blé 
 # cette fonction prend en entrée la liste des parcelles contenant le blé
@@ -30,11 +30,11 @@ class FHBPrediction(object):
         #vectCar = self.classifier.normalizeVect(vectCar)
         print vectCar, "vecteur"
 
-        neighbors = self.classifier.kNN(vectCar)
+        neighbors= self.classifier.kNN(vectCar)
         
         self.fhbDataAccess.addFHBprediction(vectCar, neighbors,cropProduction)
         print "fhb predicted"
-        return vectCar[-1]
+        return vectCar[-2]
         
     def calculerVCfhb(self):
         # calculer le vecteur caractéristique qui correspond à la fusariose de blé
@@ -66,27 +66,3 @@ class FHBPrediction(object):
                 duration+=1
     
         return duration
-
-    # Cette fonction reçoit le signal (positif ou négatif) du client 
-    # et met à jour l'ensemble d'apprentissage    
-    def feedbackFHB(self, feedbackID, crop_prediction_id, typeFeedback, date):  # feedback=1 : prediction correcte, 
-                                                    # feedback=0 : prediction fausse
-	    # récupérer la prediction
-        prediction=self.fhbDataAccess.getFHBprediction(crop_prediction_id, date) 
-
-	    # récupérer les identifiants des voisins de la table voisinage
-        neighbors=self.fhbDataAccess.getFHBpredictionNeighbours(prediction[0])
-        if typeFeedback==0 :# prédcition fausse
-            # pénaliser les voisins
-            self.fhbDataAccess.penalizeNeighbors(neighbors)
-            
-        else: # prediction correcte
-            self.fhbDataAccess.rewardNeighbors(neighbors) #récompenser les voisins
-            # ajouter la prédiction correcte à l'ensemble d'apprentisssage
-            self.fhbDataAccess.addCorrectPrediction(prediction)
-        
-
-    # mettre à jour les paramètres du classifieur kNN prendre en considération le feedback
-    def updatekNN(self):
-        self.fhbTrainingSet = self.fhbDataAccess.getFHBtrainingSet()
-        self.classifier.updateTrainingSet(self.fhbTrainingSet)

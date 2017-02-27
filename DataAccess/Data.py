@@ -98,9 +98,18 @@ def rewardNeighbors(neighbors,disease_id):
     conn.close()
     print "neighbors récompensés"
     
+    # supprimer un element de l'ensemble d'apprentissage associé à la maladie "disease_id"
+def removeTrainingSetElement(disease_id, element_id):
+    conn = connect(PredictorDB)
+    cur = conn.cursor()
+    disease_table = getDiseaseTableName(disease_id)
+    query= "DELETE from "+ disease_table+" where TrainingSetID=%s"
+    cur.execute(query,(element_id,))
+    conn.close()
+    
 def getDiseaseTableName(disease_id):
     if(disease_id ==1):
-        return "FHBtrainingset"
+        return "fhbtrainingset"
         
     
 def updateAlert(alert_id):

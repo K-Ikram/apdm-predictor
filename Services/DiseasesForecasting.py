@@ -7,13 +7,7 @@ from Services import FHBPrediction
 from DataAccess import DataAccessFHB
 from twilio.rest import TwilioRestClient
 from Data import *
-#from Data import addAlert
-#from Data import getConfirmedAlerts
-#from Data import getCropDiseases
-#from Data import getCurrentCropProduction
-#from Data import getCropProductionByDisease
-#from Data import getCropProductionClients
-#from Data import getDiseaseName
+
 
 account_sid = "AC6f519fcf4071615f570f2b10fe7a4a30" # Your Account SID from www.twilio.com/console
 auth_token  = "d95781c0a8c685b8ddc7568d9ba28fe8"  # Your Auth Token from www.twilio.com/console
@@ -121,11 +115,34 @@ def treatAnomaly():
     updateAnomaly(anomaly_id)  
 
 def treatTrueNegatives():
-    print "reward and add true negatives"
+    #reward neighbors and add true negatives to the training set
+    pass
     
 def cleanTrainingSet():
-    # il faut vérifier dans l'ensemble d'apprentissage et supprimer 
-    # les éléments non pertinents
-    print "cleaning"
-#launchFHBForecast()
-treatFeedbacks()
+    # vérifier l'ensemble d'apprentissage et supprimer 
+    # les éléments non pertinents ayant des poids < seuil
+    # clean fhb trainingSet
+    trainingSet = getFHBtrainingSet()
+    threshold = getThreshold(trainingSet)
+    cleanTrainingSet(1,trainingSet,threshold)
+
+    # clean late blight trainingSet
+
+def getThreshold(trainingSet):
+    # calculte the threshold relative to a trainingSet under which the element
+    # must be deleted
+    threshold = 0.25
+    return threshold
+    
+def cleanTrainingSet(disease_id, trainingSet,threshold):
+
+    for i in range(len(trainingSet)):
+        element_id = trainingSet[i][-1]
+        weight = trainingSet[i][-3]
+        print "id: ",element_id, " weight: ",weight
+        if(weight<= threshold):
+            removeTrainingSetElement(disease_id,element_id)
+        
+launchFHBForecast()
+#treatFeedbacks()
+#cleanTrainingSet(1,fhbData.getFHBtrainingSet(),0.5)

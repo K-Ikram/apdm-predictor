@@ -74,7 +74,7 @@ class DataAccessFHB(object):
         dataset = []
         conn = self.connect(self.PredictorDB);
         cur = conn.cursor()
-        cur.execute("SELECT TrainingSetID, TempDuration, HumidityAvg, RainfallDuration, Weight, Class FROM FHBtrainingSet where FHBtrainingSet.TrainingSetID < 50" )
+        cur.execute("SELECT TrainingSetID, TempDuration, HumidityAvg, RainfallDuration, Weight, Class FROM FHBtrainingSet" )
         
         for TrainingSetID, TempDuration, HumidityAvg, RainfallDuration, Weight, Class in cur.fetchall() :
             dataset.append((TempDuration, HumidityAvg, RainfallDuration, 
@@ -86,9 +86,9 @@ class DataAccessFHB(object):
     def addFHBprediction(self,prediction, neighbors,CropProductionID):
         conn = self.connect(self.PredictorDB);
         cursor=conn.cursor()
-        query = """ INSERT INTO fhbpredictions(PredictionDate,CropProductionID, TempDuration,HumidityAvg, RainfallDuration, class)  VALUES (CURDATE(),%s,%s,%s,%s,%s)"""
+        query = """ INSERT INTO fhbpredictions(PredictionDate,CropProductionID, TempDuration,HumidityAvg, RainfallDuration, class,RiskRate)  VALUES (CURDATE(),%s,%s,%s,%s,%s,%s)"""
         cursor.execute( query, (int(CropProductionID), float(prediction[0]),float( prediction[1]),
-                                float( prediction[2]), prediction[3]))
+                                float( prediction[2]), prediction[3],prediction[4]))
         last_id = cursor.lastrowid
 
         for x in range (len(neighbors)):

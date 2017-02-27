@@ -23,24 +23,34 @@ class WeightedKNN(object):
     # appliquer kNN sur un vecteur caractéristique
     def kNN (self, vecteurC):
         neighbors = []
+        riskRate=0
         neighbors = self.getNeighbors(vecteurC)
-        result = self.getResponse(neighbors)   
+        result, riskRate = self.getResponse(neighbors,riskRate)   
         vecteurC.append(result);
-                       
+        vecteurC.append(riskRate);
         return neighbors
     
     # trouver la classe dominante parmi la liste des voisins en entrée
-    def getResponse(self, neighbors):
+    def getResponse(self, neighbors,riskRate):
         classVotes = {}
+        
         for x in range(len(neighbors)):
             response = neighbors[x][-2]          
             if response in classVotes:
                 classVotes[response] += neighbors[x][-3]
+                
             else:
                 classVotes[response] = neighbors[x][-3]   
         sortedVotes = sorted(classVotes.iteritems(), key=operator.itemgetter(1), reverse=True) 
+        if(sortedVotes[0][0] == "oui"):
+            riskRate=sortedVotes[0][1]/(sortedVotes[0][1]+sortedVotes[1][1])
+        else:
+            riskRate=sortedVotes[1][1]/(sortedVotes[0][1]+sortedVotes[1][1])
+            
+        print "sorted ves", sortedVotes[0][1]
         
-        return sortedVotes[0][0]
+        
+        return sortedVotes[0][0],riskRate
     
     # trouver les voisins d'une instance en entrée ( un vecteur caractéristique)
     def getNeighbors(self,vecteurC):
