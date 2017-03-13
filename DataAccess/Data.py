@@ -5,18 +5,17 @@ import MySQLdb
 hostname = 'localhost'
 username = 'root'
 password = ''
-PredictorDB = 'predictorDB'
-SystemDB = 'smartfarm'
+db = 'apdm'
 
         
-def connect(database):
-    myConnection = MySQLdb.connect( host=hostname, user=username,passwd=password, db=database )        
+def connect():
+    myConnection = MySQLdb.connect( host=hostname, user=username,passwd=password, db=db )        
     return myConnection
     
 def getCurrentCropProduction():
     CropProduction=[]
-    conn = connect(SystemDB)
-    query= "SELECT crop_production_id, start_date, end_date,crop_id, plot_id FROM crop_production where CURDATE()>start_date and CURDATE()<end_date"                  
+    conn = connect()
+    query= "SELECT crop_production_id, start_date, end_date, plot FROM crop_production where CURDATE()>start_date and CURDATE()<end_date"                  
     cur = conn.cursor()
     cur.execute(query)
     for crop in cur.fetchall():
@@ -26,8 +25,8 @@ def getCurrentCropProduction():
 
 def getCropProductionByDisease(diseaseID):
     CropProduction=[]
-    conn = connect(SystemDB)
-    query= "SELECT crop_production.crop_production_id FROM crop_production, monitor_disease where crop_production.crop_production_id = monitor_disease.crop_production_id and monitor_disease.disease_id = %s and CURDATE()>crop_production.start_date and CURDATE()<crop_production.end_date"                  
+    conn = connect()
+    query= "SELECT crop_production.crop_production_id FROM crop_production, apdm_cropproductiondisease where crop_production.crop_production_id = apdm_cropproductiondisease.crop_production_id and apdm_cropproductiondisease.disease_id = %s and CURDATE()>crop_production.start_date and CURDATE()<crop_production.end_date"                  
     cur = conn.cursor()
     cur.execute(query,(diseaseID,))
     for crop in cur.fetchall():
@@ -37,8 +36,8 @@ def getCropProductionByDisease(diseaseID):
 
 def getCropDiseases(cropProductionID):
     diseases=[]
-    conn = connect(SystemDB)
-    query= "SELECT disease_id FROM monitor_disease where monitor_disease.crop_production_id=%s"                  
+    conn = connect()
+    query= "SELECT disease FROM apdm_cropproductiondisease where monitor_disapdm_cropproductiondiseaseease.crop_production_id=%s"                  
     cur = conn.cursor()
     cur.execute(query,(cropProductionID,))
     for disease in cur.fetchall():
@@ -46,18 +45,18 @@ def getCropDiseases(cropProductionID):
     conn.close()
     return diseases
 
-def addAlert(cropProductionID, diseaseID):
-    conn = connect(SystemDB)
-    query = """ INSERT INTO alert(alert_date,crop_production_id, disease_id)  VALUES (CURDATE(),%s,%s)"""
+def addAlert(cropProductionID, diseaseID,riskRate):
+    conn = connect()
+    query = """ INSERT INTO alert(alert_date,crop_production_id, disease_id, risk_rate)  VALUES (CURDATE(),%s,%s,%s)"""
     cursor = conn.cursor()
-    cursor.execute( query, (int(cropProductionID), int(diseaseID)))
+    cursor.execute( query, (int(cropProductionID), int(diseaseID), int(riskRate)))
     last_id = cursor.lastrowid
     return last_id
 
 def getCropProductionClients(cropProductionID):
     clients=[]
-    conn = connect(SystemDB)
-    query= "SELECT client.client_id, client.name, client.surname,client.phone_sms from crop_production, plot,farm,own_farm,client where crop_production.crop_production_id=%s and crop_production.plot_id = plot.plot_id and plot.farm_id=farm.farm_id and own_farm.farm_id = farm.farm_id and own_farm.client_id = client.client_id"                  
+    conn = connect()
+    query= "SELECT client.client_id, client.name, client.surname,client.phone_sms from crop_production, plot,farm, apdm_ownfarm,client where crop_production.crop_production_id=%s and crop_production.plot_id = plot.plot_id and plot.farm_id=farm.farm_id and apdm_ownfarm.farm_id = farm.farm_id and apdm_ownfarm.client_id = client.client_id"                  
     cur = conn.cursor()
     cur.execute(query,(cropProductionID,))
     for client in cur.fetchall():
@@ -67,7 +66,7 @@ def getCropProductionClients(cropProductionID):
     
     
 def getDiseaseName(diseaseID):
-    conn = connect(SystemDB)
+    conn = connect()
     query= "SELECT disease.disease_name from disease where disease.disease_id = %s"                  
     cur = conn.cursor()
     cur.execute(query,(diseaseID,))
@@ -76,7 +75,7 @@ def getDiseaseName(diseaseID):
     
 def penalizeNeighbors(neighbors, disease_id):
 # prend en entré la liste des identifiants des voisins à pénaliser
-    conn = connect(PredictorDB)
+    conn = connect()
     cur = conn.cursor()
     disease_table = getDiseaseTableName(disease_id)
     query= "UPDATE " + disease_table + " set weight = pow(weight,2)/2 where TrainingSetID=%s"
@@ -89,10 +88,10 @@ def penalizeNeighbors(neighbors, disease_id):
 # après 5 récompenses successives l'instance est considérée comme validée 
 # et ne sera plus rejetée de la table
 def rewardNeighbors(neighbors,disease_id): 
-    conn = connect(PredictorDB)
+    conn = connect()
     cur = conn.cursor()
     disease_table = getDiseaseTableName(disease_id)
-    query= "UPDATE "+ disease_table+" set weight = 2- pow(weight-2,2)/2 where TrainingSetID=%s"
+    query= "UPDATE "+ disease_table+" set weight = 2- pow(weight-2,2)/2 where training_set_id=%s"
     for x in range(len(neighbors)):
         cur.execute(query,(neighbors[x],))
     conn.close()
@@ -100,20 +99,20 @@ def rewardNeighbors(neighbors,disease_id):
     
     # supprimer un element de l'ensemble d'apprentissage associé à la maladie "disease_id"
 def removeTrainingSetElement(disease_id, element_id):
-    conn = connect(PredictorDB)
+    conn = connect()
     cur = conn.cursor()
     disease_table = getDiseaseTableName(disease_id)
-    query= "DELETE from "+ disease_table+" where TrainingSetID=%s"
+    query= "DELETE from "+ disease_table+" where training_set_id=%s"
     cur.execute(query,(element_id,))
     conn.close()
     
 def getDiseaseTableName(disease_id):
     if(disease_id ==1):
-        return "fhbtrainingset"
+        return "fhb_training_set"
         
     
 def updateAlert(alert_id):
-    conn = connect(SystemDB)
+    conn = connect()
     cur = conn.cursor()
     query= "UPDATE alert set feedback_treated = 1 where alert_id =%s"
     cur.execute(query,(alert_id,))
@@ -121,8 +120,8 @@ def updateAlert(alert_id):
     
 def getConfirmedAlerts():
     alerts=[]
-    conn = connect(SystemDB)
-    query= "SELECT alert_id, alert_date, crop_production_id, disease_id from alert where alert.alert_confirmed= 1 and alert.feedback_treated=0"                  
+    conn = connect()
+    query= "SELECT alert_id, alert_date, crop_production, disease from alert where alert.alert_confirmed= 1 and alert.feedback_treated=0"                  
     cur = conn.cursor()
     cur.execute(query)
     for alert in cur.fetchall():
@@ -132,8 +131,8 @@ def getConfirmedAlerts():
 
 def getDeclinedAlerts():
     alerts=[]
-    conn = connect(SystemDB)
-    query= "SELECT alert_id, alert_date, crop_production_id, disease_id from alert where alert.alert_confirmed= 0 and alert.feedback_treated=0"                  
+    conn = connect()
+    query= "SELECT alert_id, alert_date, crop_production, disease from alert where alert.alert_confirmed= 0 and alert.feedback_treated=0"                  
     cur = conn.cursor()
     cur.execute(query)
     for alert in cur.fetchall():
@@ -143,8 +142,8 @@ def getDeclinedAlerts():
 
 def getAnomalies():
     anomalies=[]
-    conn = connect(SystemDB)
-    query= "SELECT anomaly_id, occurence_date, crop_production_id, disease_id from anomaly where anomaly.treated = 0"                  
+    conn = connect()
+    query= "SELECT anomaly_id, occurence_date, crop_production, disease from anomaly where anomaly.treated = 0"                  
     cur = conn.cursor()
     cur.execute(query)
     for anomaly in cur.fetchall():
@@ -153,7 +152,7 @@ def getAnomalies():
     return anomalies
 
 def updateAnomaly(anomaly_id):
-    conn = connect(SystemDB)
+    conn = connect()
     cur = conn.cursor()
     query= "UPDATE anomaly set treated = 1 where anomaly_id =%s"
     cur.execute(query,(anomaly_id,))

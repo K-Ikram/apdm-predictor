@@ -1,7 +1,7 @@
 
 
 import sys
-sys.path.append('E:\Workspace\Predictor2\DataAccess')
+sys.path.append('D:\PFE\Developpement\Predictor2\DataAccess')
 import Data
 from Services import FHBPrediction
 from DataAccess import DataAccessFHB
@@ -22,13 +22,15 @@ def launchFHBForecast():
     
     for cropProduction in cropProductions:
         #risque est un booléan : true = présence de risque / false = absence de risque
-        risque = fhbPrediction.predictFHB(cropProduction)
-        print risque
-        if(risque == "oui"):
-            addAlert(cropProduction, disease_id)# addAlert ajoute une alerte à la BDD et renvoie son identifiant
-            sendAlerts(cropProduction, disease_id)
-        else:
-            print "there is no risk"
+        risk_rate = fhbPrediction.predictFHB(cropProduction)
+#        if(risk_rate >= 0.5):
+#            addAlert(cropProduction, disease_id, risk_rate)# addAlert ajoute une alerte à la BDD et renvoie son identifiant
+#            sendAlerts(cropProduction, disease_id)
+#        else:
+#            print "there is no risk"
+        risk_rate = 0.95
+        addAlert(cropProduction, disease_id, risk_rate)
+        sendAlerts(cropProduction, disease_id)
             
 def sendAlerts(cropProductionID,diseaseID):
     #récupèrer les clients concernés par l'alerte

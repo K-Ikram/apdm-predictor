@@ -33,6 +33,7 @@ class WeightedKNN(object):
     # trouver la classe dominante parmi la liste des voisins en entrée
     def getResponse(self, neighbors,riskRate):
         classVotes = {}
+        sum_ = 0
         
         for x in range(len(neighbors)):
             response = neighbors[x][-2]          
@@ -40,12 +41,19 @@ class WeightedKNN(object):
                 classVotes[response] += neighbors[x][-3]
                 
             else:
-                classVotes[response] = neighbors[x][-3]   
+                classVotes[response] = neighbors[x][-3] 
+            sum_ += neighbors[x][-3]
         sortedVotes = sorted(classVotes.iteritems(), key=operator.itemgetter(1), reverse=True) 
-        if(sortedVotes[0][0] == "oui"):
-            riskRate=sortedVotes[0][1]/(sortedVotes[0][1]+sortedVotes[1][1])
-        else:
-            riskRate=sortedVotes[1][1]/(sortedVotes[0][1]+sortedVotes[1][1])
+        
+        # calculer la somme pour eviter le cas ou il ya pas un risque ( taux = 0.0)
+        if (sortedVotes[0][1]==sum_ and sortedVotes[0][0] == "non"):
+            riskRate = 0
+        else :
+            
+            if(sortedVotes[0][0] == "oui"):
+                riskRate=sortedVotes[0][1]/(sum_)
+            else:
+                riskRate=sortedVotes[1][1]/(sum_)
             
         print "sorted ves", sortedVotes[0][1]
         

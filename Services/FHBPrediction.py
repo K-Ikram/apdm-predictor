@@ -34,7 +34,8 @@ class FHBPrediction(object):
         
         self.fhbDataAccess.addFHBprediction(vectCar, neighbors,cropProduction)
         print "fhb predicted"
-        return vectCar[-2]
+        print vectCar[-1]
+        return vectCar[-1]
         
     def calculerVCfhb(self):
         # calculer le vecteur caractéristique qui correspond à la fusariose de blé
