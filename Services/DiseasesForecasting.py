@@ -23,14 +23,11 @@ def launchFHBForecast():
     for cropProduction in cropProductions:
         #risque est un booléan : true = présence de risque / false = absence de risque
         risk_rate = fhbPrediction.predictFHB(cropProduction)
-#        if(risk_rate >= 0.5):
-#            addAlert(cropProduction, disease_id, risk_rate)# addAlert ajoute une alerte à la BDD et renvoie son identifiant
-#            sendAlerts(cropProduction, disease_id)
-#        else:
-#            print "there is no risk"
-        risk_rate = 0.95
-        addAlert(cropProduction, disease_id, risk_rate)
-        sendAlerts(cropProduction, disease_id)
+        if(risk_rate >= 0.5):
+            addAlert(cropProduction, disease_id, risk_rate)# addAlert ajoute une alerte à la BDD et renvoie son identifiant
+            sendAlerts(cropProduction, disease_id)
+        else:
+            print "there is no risk"
             
 def sendAlerts(cropProductionID,diseaseID):
     #récupèrer les clients concernés par l'alerte
