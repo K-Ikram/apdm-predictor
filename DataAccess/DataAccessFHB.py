@@ -91,7 +91,7 @@ class DataAccessFHB(object):
 
         for x in range (len(neighbors)):
             if (neighbors[x][-2] == prediction[3]):
-                sql1 = """ INSERT INTO fhb_voisinage( prediction_id, training_set_id) VALUES (%s,%s)"""
+                sql1 = """ INSERT INTO fhb_neighbourhood( prediction_id, training_set_id) VALUES (%s,%s)"""
                 cursor.execute(sql1,(float(last_id), float(neighbors[x][-1])))
         
         conn.commit()
