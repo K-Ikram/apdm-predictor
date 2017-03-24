@@ -11,7 +11,21 @@ db = 'apdm'
 def connect():
     myConnection = MySQLdb.connect( host=hostname, user=username,passwd=password, db=db )        
     return myConnection
+
+def getSensors(cropProductionID,sensorType):
+    sensors = []
+    conn = connect()
+    query = "select sensor.sensor_id from apdm_cropproductionsensor, sensor where apdm_cropproductionsensor.sensor_id = sensor.sensor_id and apdm_cropproductionsensor.crop_production_id = %s and sensor.sensor_type = %s"
+    cur = conn.cursor()
+    cur.execute(query, (cropProductionID,sensorType))
     
+    for sensor in cur.fetchall():
+        sensors.append(int(sensor[0]))
+    print "sensors: ", sensors
+    
+    conn.close()        
+    return sensors 
+   
 def getCurrentCropProduction():
     CropProduction=[]
     conn = connect()
