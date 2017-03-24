@@ -28,7 +28,11 @@ class WeightedKNN(object):
         result, riskRate = self.getResponse(neighbors,riskRate)   
         vecteurC.append(result);
         vecteurC.append(riskRate);
-        return neighbors
+        neighbors_list = []
+        for x in range (len(neighbors)):
+            if (neighbors[x][-2] == result):
+                neighbors_list.append(neighbors[x][-1])
+        return neighbors_list
     
     # trouver la classe dominante parmi la liste des voisins en entrée
     def getResponse(self, neighbors,riskRate):
@@ -71,6 +75,7 @@ class WeightedKNN(object):
         distances.sort(key=operator.itemgetter(1))
         neighbors = []
         for x in range(self.k):
+            
             neighbors.append(distances[x][0])
             
         return neighbors

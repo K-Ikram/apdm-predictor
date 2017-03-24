@@ -8,11 +8,11 @@ Created on Thu Feb 16 15:17:21 2017
 import numpy as np
 from DataAccess import DataAccessFHB
 from Services import WeightedKNN
-
+from DataAccessMongoDB import *
 class FHBPrediction(object):
     def __init__(self):
         self.fhbDataAccess = DataAccessFHB.DataAccessFHB()
-        self.fhbTrainingSet = self.fhbDataAccess.getFHBtrainingSet()
+        self.fhbTrainingSet = getFHBtrainingSet()
         self.classifier = WeightedKNN.WeightedKNN(50,self.fhbTrainingSet)
 
 # on prédit la fusariose pour chaque parcelle contenant le blé 
@@ -30,9 +30,9 @@ class FHBPrediction(object):
         #vectCar = self.classifier.normalizeVect(vectCar)
         print vectCar, "vecteur"
 
-        neighbors= self.classifier.kNN(vectCar)
+        neighbors= self.classifier.kNN(vectCar)        
         
-        self.fhbDataAccess.addFHBprediction(vectCar, neighbors,cropProduction)
+        addFHBprediction(vectCar, neighbors,cropProduction)
         print "fhb predicted"
         print vectCar[-1]
         return vectCar[-1]
