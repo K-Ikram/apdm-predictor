@@ -1,7 +1,7 @@
+# -*- coding: utf-8 -*-
 from datetime import datetime
 from bson import ObjectId
 from pymongo import MongoClient
-# -*- coding: utf-8 -*-
 
 class MongoConnection(object):
 
@@ -13,6 +13,7 @@ class MongoConnection(object):
         self.collection = self.db[name]
         
 class TrainingSetCollection(MongoConnection):
+    
     def __init__(self):
        super(TrainingSetCollection, self).__init__()
        self.get_collection('dataset')
@@ -31,6 +32,7 @@ class TrainingSetCollection(MongoConnection):
         return result
 
 class PredictionCollection(MongoConnection):
+    
     def __init__(self):
        super(PredictionCollection, self).__init__()
        self.get_collection('prediction')

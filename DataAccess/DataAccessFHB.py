@@ -19,6 +19,10 @@ class DataAccessFHB(object):
         self.cursor = self.db.cursor()
         self.data_access = Data()
 
+    def __enter__(self):
+        return DataAccessFHB()
+
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.db:
             self.db.close()

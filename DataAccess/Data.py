@@ -11,6 +11,9 @@ class Data:
     def __init__(self):
         self.db = MySQLdb.connect( host=self.hostname, user=self.username,passwd=self.password, db=self.database )        
         self.cursor = self.db.cursor()
+
+    def __enter__(self):
+        return Data()
     
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.db:
