@@ -20,7 +20,7 @@ class TrainingSetCollection(MongoConnection):
         
     def getFHBtrainingSet(self) :
         dataset = []
-        cursor = self.collection.find({"disease":"fusarium of wheat"})
+        cursor = self.collection.find({"disease":1})
         for document in cursor :
             dataset.append((document["temp_duration"], document["humidity_avg"], 
                             document["rainfall_duration"], document["weight"],
@@ -42,7 +42,7 @@ class PredictionCollection(MongoConnection):
                 
         result = self.collection.insert_one(
             {"prediction_date":datetime.now().replace(hour=0,minute=0,second=0,microsecond=0),
-                "disease":"fusarium of wheat",
+                "disease":1,
                 "crop_production":int(CropProductionID), 
                 "temp_duration":int(prediction[0]),
                 "humidity_avg":float(prediction[1]), 

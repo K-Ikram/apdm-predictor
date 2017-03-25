@@ -7,7 +7,7 @@ Created on Thu Feb 16 15:17:21 2017
 import numpy as np
 from Services.WeightedKNN import WeightedKNN
 from DataAccess.DataAccessFHB import DataAccessFHB
-from DataAccessMongoDB import TrainingSetCollection, PredictionCollection
+from DataAccess.DataAccessMongoDB import TrainingSetCollection, PredictionCollection
 
 
 class FHBPrediction(object):
