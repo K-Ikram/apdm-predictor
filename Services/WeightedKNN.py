@@ -7,18 +7,13 @@ Created on Thu Feb 16 15:12:41 2017
 import math
 import operator
 import numpy as np
-import copy
 
 class WeightedKNN(object):
     
     def __init__(self, k, trainingSet):
         self.k = k
-        self.updatekNN(trainingSet) 
-        
-    # mettre à jour l'ensemble d'apprentissage
-    def updatekNN(self,trainingSet):
-        self.trainingSet = copy.copy(trainingSet)
-        #self.normalizedTrainingSet = self.normalizeTrainingSet(trainingSet)
+        self.trainingSet = trainingSet 
+        self.normalizedTrainingSet = self.normalizeTrainingSet(trainingSet)
    
     # appliquer kNN sur un vecteur caractéristique
     def kNN (self, vecteurC):

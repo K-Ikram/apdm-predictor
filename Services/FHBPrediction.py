@@ -4,37 +4,42 @@ Created on Thu Feb 16 15:17:21 2017
 
 @author: BOUEHNNI
 """
-#import sys
 import numpy as np
-from DataAccess import DataAccessFHB
-from Services import WeightedKNN
-from DataAccessMongoDB import *
+from Services.WeightedKNN import WeightedKNN
+from DataAccess.DataAccessFHB import DataAccessFHB
+from DataAccessMongoDB import TrainingSetCollection, PredictionCollection
+
+
 class FHBPrediction(object):
+    
     def __init__(self):
-        self.fhbDataAccess = DataAccessFHB.DataAccessFHB()
-        self.fhbTrainingSet = getFHBtrainingSet()
-        self.classifier = WeightedKNN.WeightedKNN(50,self.fhbTrainingSet)
+        self.fhb_data_access = DataAccessFHB()
+        self.dataset_col = TrainingSetCollection()
+        self.prediction_col = PredictionCollection()
+        self.mesures = []
 
 # on prédit la fusariose pour chaque parcelle contenant le blé 
 # cette fonction prend en entrée la liste des parcelles contenant le blé
-    def predictFHB(self, cropProduction):     
-        # getFHBmesures() retourne mesures[] d'une parcelle ordonnées par date
-        # c'est une matrice qui contient 3 colonnes 
-        # 1. Moyenne de la temperature
-        # 2. Moyenne de l'humidité
-        # 3. Les précipitations
-        self.mesures = self.fhbDataAccess.getFHBmesures(cropProduction)
-        print self.mesures
-
-        vectCar = self.calculerVCfhb()
-        #vectCar = self.classifier.normalizeVect(vectCar)
-        print vectCar, "vecteur"
-
-        neighbors= self.classifier.kNN(vectCar)        
+    def predictFHB(self, crop_production_id):     
         
-        addFHBprediction(vectCar, neighbors,cropProduction)
-        print "fhb predicted"
-        print vectCar[-1]
+        self.mesures = self.fhb_data_access.getFHBmesures(crop_production_id) 
+        # récupérer les mesures climatiques
+        # c'est une matrice qui contient 3 colonnes 
+        # [Moyenne de la temperature, Moyenne de l'humidité,Les précipitations]
+        print "mesures climatiques", self.mesures
+                
+        fhb_training_set = self.dataset_col.getFHBtrainingSet() # récupérer l'ensemble d'apprentissage
+        
+        vectCar = self.calculerVCfhb() # calculer le vecteur caractéristique
+
+        classifier = WeightedKNN(50,fhb_training_set)        
+        #vectCar = classifier.normalizeVect(vectCar)
+        
+        neighbors= classifier.kNN(vectCar) # calculer le risque de la fusariose de blé et récupérer la liste des voisins de la prédiction créée
+        self.prediction_col.addFHBprediction(vectCar, neighbors,crop_production_id) # ajouter la nouvelle prédiction au trainingSet
+
+        # vectCar: [temp_duration, humidity_avg, rainfall_duration, resultat, risque de fusariose]
+        print  "vecteur caracteristique ", vectCar
         return vectCar[-1]
         
     def calculerVCfhb(self):
