@@ -18,17 +18,15 @@ class DiseaseForcasting:
         disease_id = 1 # id de la maladie 
         cropProductions=self.data_access.getCropProductionByDisease(disease_id)
         print "crop productions: " , cropProductions
-        if cropProductions is None:
-            print "none"
-        
+
         for cropProduction in cropProductions:
-            # risque est un pourcentage de présence de la maladie
+            # risque_rate:  un pourcentage de présence de la maladie
             risk_rate = self.fhb_prediction.predictFHB(cropProduction)
             if(risk_rate >= 0.5):
                 self.data_access.addAlert(cropProduction, disease_id, risk_rate) # addAlert ajoute une alerte à la BDD
                 self.sendAlerts(cropProduction, disease_id, risk_rate)
             else:
-                print "there is no risk"
+                print "pas de risque de fusariose"
                 
     def sendAlerts(self,cropProductionID,diseaseID, risk_rate):
         # récupèrer les clients concernés par l'alerte

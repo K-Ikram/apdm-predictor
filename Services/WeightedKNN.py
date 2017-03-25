@@ -53,11 +53,8 @@ class WeightedKNN(object):
                 riskRate=sortedVotes[0][1]/(sum_)
             else:
                 riskRate=sortedVotes[1][1]/(sum_)
-            
-        print "sorted ves", sortedVotes[0][1]
         
-        
-        return sortedVotes[0][0],riskRate
+        return sortedVotes[0][0], riskRate
     
     # trouver les voisins d'une instance en entrée ( un vecteur caractéristique)
     def getNeighbors(self,vecteurC):

@@ -52,7 +52,6 @@ class FHBPrediction(object):
         
         # construire un vecteur caractéristique de 3 variables
         vectCar = [periodTemp,aveHum,periodRain]
-        print vectCar
             
         return vectCar
     
