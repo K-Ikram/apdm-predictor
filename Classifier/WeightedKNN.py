@@ -7,27 +7,31 @@ Created on Thu Feb 16 15:12:41 2017
 import math
 import operator
 import numpy as np
+from AbstractClassifier import AbstractClassifier
 
-class WeightedKNN(object):
-    
-    def __init__(self, k, trainingSet):
-        self.k = k
-        self.trainingSet = trainingSet 
-        self.normalizedTrainingSet = self.normalizeTrainingSet(trainingSet)
-   
+class WeightedKNN(AbstractClassifier):
+    classifier =None
+    learningDataAccess=None
+
+    @classmethod
+    def getInstance(self):
+        if(self.classifier is None):
+            self.classifier=WeightedKNN()
+        return self.classifier
+            
+            
     # appliquer kNN sur un vecteur caractéristique
-    def kNN (self, vecteurC):
+    def classify (self, vectC, disease_name,crop_production_id):
         neighbors = []
         riskRate=0
-        neighbors = self.getNeighbors(vecteurC)
+        neighbors = self.getNeighbors(vectC,disease_name)
+        print "voisins", neighbors
         result, riskRate = self.getResponse(neighbors,riskRate)   
-        vecteurC.append(result);
-        vecteurC.append(riskRate);
-        neighbors_list = []
-        for x in range (len(neighbors)):
-            if (neighbors[x][-2] == result):
-                neighbors_list.append(neighbors[x][-1])
-        return neighbors_list
+        vectC.append(result);
+        vectC.append(riskRate);
+        self.learningDataAccess.addPrediction(vectC,crop_production_id)
+
+        return vectC
     
     # trouver la classe dominante parmi la liste des voisins en entrée
     def getResponse(self, neighbors,riskRate):
@@ -57,17 +61,20 @@ class WeightedKNN(object):
         return sortedVotes[0][0], riskRate
     
     # trouver les voisins d'une instance en entrée ( un vecteur caractéristique)
-    def getNeighbors(self,vecteurC):
+    def getNeighbors(self,vecteurC,disease_name):
+        self.learningDataAccess=self.createLearningDataAccess(disease_name)
+        
+        trainingSet=self.learningDataAccess.getTrainingSet()
+        k = self.learningDataAccess.getKparameter()
         distances = []
         
-        for x in range(len(self.trainingSet)):
-#            dist = self.euclideanDistance(vecteurC, self.normalizedTrainingSet[x])
-            dist = self.euclideanDistance(vecteurC, self.trainingSet[x])
-            distances.append((self.trainingSet[x], dist))
+        for x in range(len(trainingSet)):
+            dist = self.euclideanDistance(vecteurC, trainingSet[x])
+            distances.append((trainingSet[x], dist))
         distances.sort(key=operator.itemgetter(1))
+        
         neighbors = []
-        for x in range(self.k):
-            
+        for x in range(k):
             neighbors.append(distances[x][0])
             
         return neighbors
@@ -96,6 +103,7 @@ class WeightedKNN(object):
     # normaliser l'ensemble d'apprentissage
     def normalizeTrainingSet(self,array):
         npArr = np.array(array)
+        
         for j in range(np.shape(npArr)[1]-3):
             npArr[:,j] = self.normalize(npArr[:,j].astype(np.float))  
         for i in range(np.shape(npArr)[0]):
@@ -104,7 +112,7 @@ class WeightedKNN(object):
                 array[i][k]= float(npArr[i][k])
         return array
     
-    # normaliser les éléments d'une liste entre 0 et 1
+    # normaliser les elements d'une liste entre 0 et 1
     def normalize(self,array):
         scaledArray = np.zeros(len(array))
         minimum = np.amin(array)
