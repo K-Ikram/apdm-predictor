@@ -21,7 +21,4 @@ class ForcastingLauncher:
         # predict disease for each crop production
         for cropProduction in cropProductions:
             predictor.predictDisease(cropProduction)
-            
-        
-df= ForcastingLauncher()
-df.launchDiseaseForecasting(1)
+        return "fire"

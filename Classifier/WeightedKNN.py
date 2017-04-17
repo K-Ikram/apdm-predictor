@@ -24,7 +24,7 @@ class WeightedKNN(AbstractClassifier):
     def classify (self, vectC, disease_name,crop_production_id):
         neighbors = []
         riskRate=0
-        neighbors = self.getNeighbors(vectC,disease_name)
+        neighbors = self.getNeighbors(vectC,disease_name,True)
         print "voisins", neighbors
         result, riskRate = self.getResponse(neighbors,riskRate)   
         vectC.append(result);
@@ -61,11 +61,16 @@ class WeightedKNN(AbstractClassifier):
         return sortedVotes[0][0], riskRate
     
     # trouver les voisins d'une instance en entrée ( un vecteur caractéristique)
-    def getNeighbors(self,vecteurC,disease_name):
+    def getNeighbors(self,vecteurC,disease_name, is_k):
         self.learningDataAccess=self.createLearningDataAccess(disease_name)
         
         trainingSet=self.learningDataAccess.getTrainingSet()
-        k = self.learningDataAccess.getKparameter()
+        if(is_k):
+        	param = self.learningDataAccess.getParameter(disease_name,"k")
+        else:
+        	param = self.learningDataAccess.getParameter(disease_name,"l")
+
+        
         distances = []
         
         for x in range(len(trainingSet)):
@@ -74,7 +79,7 @@ class WeightedKNN(AbstractClassifier):
         distances.sort(key=operator.itemgetter(1))
         
         neighbors = []
-        for x in range(k):
+        for x in range(param):
             neighbors.append(distances[x][0])
             
         return neighbors

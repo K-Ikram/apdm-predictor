@@ -12,14 +12,16 @@ class SMSNotifier(AbstractNotifier):
         crop_production_name = self.data_access.getCropProductionName(crop_production_id)
         # récupérer le nom de la maladie 
         msgtext= "Attention Il y a un risque de "+ `disease_name`+" dans votre culture "+`crop_production_name`+" avec un taux de "+`risk_rate`
-        
+        print msgtext
         # envoi de l'alerte à tous les clients concernés
         for client in clients:
-        
-            phone_sms = client[-1]
-            twilioClient = TwilioRestClient(self.account_sid, self.auth_token)        
-            twilioClient.messages.create(body=msgtext,
-                to=phone_sms,     # Replace with phone_sms value
-                from_="+13175762039") # Replace with your Twilio number 
-            
-            print "sms sent"
+            print client
+            if(client[-3]):
+                phone_sms = client[-1]
+                twilioClient = TwilioRestClient(self.account_sid, self.auth_token)        
+                twilioClient.messages.create(body=msgtext,
+                    to=phone_sms,     # phone_sms value
+                    from_="+13175762039") # Twilio number 
+                
+                print "sms sent"
+            else: print "sms notif are not activated"

@@ -20,7 +20,7 @@ class RessourceDataAccess(AbstractDataAccess):
         
     def getCropProductionOwners(self,cropProductionID):
         clients=[]
-        query= "SELECT apdm_client.client_id, apdm_client.first_name, apdm_client.last_name,apdm_client.phone_sms from crop_production, plot,farm, apdm_ownfarm,apdm_client where crop_production.crop_production_id=%s and crop_production.plot_id = plot.plot_id and plot.farm_id=farm.farm_id and apdm_ownfarm.farm_id = farm.farm_id and apdm_ownfarm.client_id = apdm_client.client_id"                  
+        query= "SELECT apdm_client.client_id, apdm_client.first_name, apdm_client.last_name,apdm_client.notification_email, apdm_client.notification_sms,apdm_client.email, apdm_client.phone_sms from apdm_client, crop_client where crop_client.crop_production_id=%s and crop_client.client_id = apdm_client.client_id"                  
         self.cursor.execute(query,(cropProductionID,))
         for client in self.cursor.fetchall():
             clients.append(client)
