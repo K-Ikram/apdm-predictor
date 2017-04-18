@@ -112,5 +112,3 @@ class WeightedKNNLearner(AbstractLearner):
             predictions = self.learning_data_access.getNonTreatedPredictions(d["disease"],d["tn_period"])
             for prediction in predictions:
                 self.reward(prediction["prediction_date"],prediction["disease"],prediction["crop_production"])
-import datetime
-WeightedKNNLearner.getInstance().reward("2017-04-15T01:00:00Z","Fusariose de ble",5)
