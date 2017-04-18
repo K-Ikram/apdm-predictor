@@ -79,7 +79,7 @@ class WeightedKNN(AbstractClassifier):
         distances.sort(key=operator.itemgetter(1))
         
         neighbors = []
-        for x in range(param):
+        for x in range(int(param)):
             neighbors.append(distances[x][0])
             
         return neighbors

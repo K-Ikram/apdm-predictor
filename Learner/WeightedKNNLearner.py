@@ -15,15 +15,17 @@ class WeightedKNNLearner(AbstractLearner):
         self.classifier = WeightedKNN.getInstance() 
         
     def penalize(self, date_occurrence, disease_name, crop_production_id):
+        disease_learning_data_access = self.createLearningDataAccess(disease_name)
+
         if(self.isPenalizeAllowed(disease_name)):
-            prediction = self.learning_data_access.getPrediction(date_occurrence, disease_name, crop_production_id)
+            prediction = disease_learning_data_access.getPrediction(date_occurrence, disease_name, crop_production_id)
             if(prediction is not None):
                 neighbors = self.classifier.getNeighbors(prediction["features"],disease_name,False)
                 for neighbor in neighbors:
-                    new_weight = math.pow(prediction["weight"],2)/2
-                    self.learning_data_access.updateTrainingSetElementWeight(neighbor, new_weight)
+                    new_weight = math.pow(neighbor[-3],2)/2
+                    disease_learning_data_access.updateTrainingSetElementWeight(neighbor[-1], new_weight)
             
-                self.learning_data_access.updatePredictionState(prediction["_id"])
+                disease_learning_data_access.updatePredictionState(prediction["_id"])
                 # supprimer les elements non partinents de l'ensemble d'apprentissage
                 self.learning_data_access.removeUnusefulElements(disease_name)
                 self.updateClassifier(disease_name)
@@ -78,16 +80,22 @@ class WeightedKNNLearner(AbstractLearner):
         
     
     def reward(self, date_occurrence, disease_name, crop_production_id):
+        disease_learning_data_access = self.createLearningDataAccess(disease_name)
         if(self.isRewardAllowed(disease_name)):
-            prediction = self.learning_data_access.getPrediction(date_occurrence, disease_name, crop_production_id)
+            prediction = disease_learning_data_access.getPrediction(date_occurrence, disease_name, crop_production_id)
             if(prediction is not None):
                 neighbors = self.classifier.getNeighbors(prediction["features"],disease_name,False)
                 for neighbor in neighbors:
-                    new_weight = 2- math.pow(prediction["weight"]-2,2)/2
-                    self.learning_data_access.updateTrainingSetElementWeight(neighbor, new_weight)
+                    #print neighbor[-3], "weight"
+                    new_weight = 2- math.pow(neighbor[-3]-2,2)/2
+                    #print neighbor[-1], "_id"
+                    disease_learning_data_access.updateTrainingSetElementWeight(neighbor[-1], new_weight)
                 
-                self.learning_data_access.updatePredictionState(prediction["_id"])
+                disease_learning_data_access.updatePredictionState(prediction["_id"])
+                disease_learning_data_access.addTrainingSetElement(prediction)
                 self.updateClassifier(disease_name)
+            else:
+                "no prediction found"
         else:
             print "I cannot reward this training set"
     
@@ -104,3 +112,5 @@ class WeightedKNNLearner(AbstractLearner):
             predictions = self.learning_data_access.getNonTreatedPredictions(d["disease"],d["tn_period"])
             for prediction in predictions:
                 self.reward(prediction["prediction_date"],prediction["disease"],prediction["crop_production"])
+import datetime
+WeightedKNNLearner.getInstance().reward("2017-04-15T01:00:00Z","Fusariose de ble",5)

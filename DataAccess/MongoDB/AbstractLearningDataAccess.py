@@ -158,8 +158,10 @@ class AbstractLearningDataAccess():
         return result
     
     def addPrediction(self):
-        raise NotImplementedError("Add prediction is not implemented here")
+        raise NotImplementedError("Add Prediction is not implemented here")
     
     def getTrainingSet(self):
         raise NotImplementedError("get Training Set is not implemented here")
         
+    def addTrainingSetElement(self):
+        raise NotImplementedError("add Training Set Element is not implemented here")
