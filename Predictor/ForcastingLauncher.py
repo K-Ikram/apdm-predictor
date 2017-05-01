@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from DataAccess.MySQL.RessourceDataAccess import RessourceDataAccess
+from DataAccess.MySQL.DataAccess import DataAccess
 from FusariumHeadBlightPredictor import FusariumHeadBlightPredictor
 from PotatoLateBlightPredictor import PotatoLateBlightPredictor
 
@@ -13,7 +13,7 @@ class ForcastingLauncher:
             return PotatoLateBlightPredictor()     
 
     def launchDiseaseForecasting(self,disease_id):
-        data_access =RessourceDataAccess.getInstance()
+        data_access =DataAccess.getInstance()
         predictor = self.createPredictor(disease_id)
         # retrieve current crop productions
         cropProductions=data_access.getCropProductionByDisease(disease_id)
@@ -22,3 +22,5 @@ class ForcastingLauncher:
         for cropProduction in cropProductions:
             predictor.predictDisease(cropProduction)
         return "fire"
+
+ForcastingLauncher().launchDiseaseForecasting(1)

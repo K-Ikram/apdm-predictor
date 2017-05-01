@@ -6,26 +6,20 @@ Created on Thu Feb 16 15:17:21 2017
 """
 import numpy as np
 from Classifier.WeightedKNN import WeightedKNN
-from DataAccess.MySQL.FusariumHeadBlightDataAccess import FusariumHeadBlightDataAccess
+from DataAccess.MySQL.DataAccess import DataAccess
 from AbstractPredictor import AbstractPredictor
 
 class FusariumHeadBlightPredictor(AbstractPredictor):
     
     def __init__(self):
         super(FusariumHeadBlightPredictor,self).__init__()
-        self.data_access=FusariumHeadBlightDataAccess()
+        self.data_access=DataAccess.getInstance()
 
-# on prédit la fusariose pour chaque parcelle contenant le blé 
-# cette fonction prend en entrée la liste des parcelles contenant le blé
+    # on prédit la fusariose pour chaque parcelle contenant le blé 
+    # cette fonction prend en entrée la liste des parcelles contenant le blé
     def predictDisease(self, crop_production_id):     
         
-        self.measures = self.data_access.getMeasures(crop_production_id) 
-        # récupérer les measures climatiques
-        # c'est une matrice qui contient 3 colonnes 
-        # [Moyenne de la temperature, Moyenne de l'humidité,Les précipitations]
-        print "measures climatiques", self.measures
-        
-        vectCar = self.calculateFeatures() # calculer le vecteur caractéristique
+        vectCar = self.calculateFeatures(crop_production_id) # calculer le vecteur caractéristique
         # vectCar: [temp_duration, humidity_avg, rainfall_duration, resultat, risque de fusariose]
         print  "vecteur caracteristique ", vectCar
 
@@ -41,32 +35,35 @@ class FusariumHeadBlightPredictor(AbstractPredictor):
             self.sms_notifier.notify(crop_production_id, "Fusariose du blé",risk_rate)
 
         
-    def calculateFeatures(self):
+    def calculateFeatures(self,crop_production_id):
         # calculer le vecteur caractéristique qui correspond à la fusariose de blé
         
-        periodTemp = self.calculateTempDuration() # calculer la durée de la période dans laquelle
+        periodTemp = self.calculateTempDuration(crop_production_id) # calculer la durée de la période dans laquelle
                                                   # température entre 9 et 30°C
-        aveHum = np.mean(self.measures[1])  # calculer l'humidité relative moyenne
-        periodRain = self.calculateRainDuration() # calculer la durée de la période des précipitations
+        aveHum = self.calculateAveHum(crop_production_id)  # calculer l'humidité relative moyenne
+        periodRain = self.calculateRainDuration(crop_production_id) # calculer la durée de la période des précipitations
         
         # construire un vecteur caractéristique de 3 variables
         vectCar = [periodTemp,aveHum,periodRain]
             
         return vectCar
     
-    def calculateTempDuration(self):
+    def calculateTempDuration(self,crop_production_id):
         duration = 0
-        for x in range(len(self.measures[0])):
-            if ( self.measures[0][x] > 9 and self.measures[0][x] < 30 ):
+        measures = self.data_access.getMeasures(crop_production_id, "temperature", 70)
+        for x in range(len(measures)):
+            if ( measures[x] > 9 and measures[x] < 30 ):
                 duration+=1
-
         return duration
     
-    def calculateRainDuration(self):
-
+    def calculateAveHum(self, crop_production_id):
+        measures = self.data_access.getMeasures(crop_production_id,"humidity",70)
+        return np.mean(measures)
+        
+    def calculateRainDuration(self,crop_production_id):
+        measures = self.data_access.getMeasures(crop_production_id,"rainfall",70)
         duration = 0
-        for x in range(len(self.measures[2])):
-            if ( self.measures[2][x] >= 0.1 ):
+        for x in range(len(measures)):
+            if ( measures[x] >= 0.1 ):
                 duration+=1
-    
         return duration

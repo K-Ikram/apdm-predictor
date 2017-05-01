@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
-from DataAccess.MongoDB.AbstractLearningDataAccess import AbstractLearningDataAccess
-from DataAccess.MongoDB.FusariumHeadBlightLearningDataAccess import FusariumHeadBlightLearningDataAccess
-from DataAccess.MongoDB.PotatoLateBlightLearningDataAccess import PotatoLateBlightLearningDataAccess
+from DataAccess.MongoDB.LearningDataAccess import LearningDataAccess
 
 class AbstractLearner(object):
     def __init__(self):
-        self.learning_data_access = AbstractLearningDataAccess.getInstance()
+        self.learning_data_access = LearningDataAccess.getInstance()
 
     def penalize(self, date_occurrence, disease_name, crop_production_id):
         raise NotImplementedError("Penalize is not implemented here")
@@ -24,10 +22,3 @@ class AbstractLearner(object):
 
     def rewardTrueNegatives(self):
         raise NotImplementedError("reward True Negatives is not implemented here")
-
-
-    def createLearningDataAccess(self,disease_name):
-        if(disease_name=="Fusariose de ble"):
-            return FusariumHeadBlightLearningDataAccess()
-        if(disease_name=="Mildiou de la pomme de terre"):
-            return PotatoLateBlightLearningDataAccess()

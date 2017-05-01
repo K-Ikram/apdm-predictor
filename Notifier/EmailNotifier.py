@@ -18,7 +18,7 @@ class EmailNotifier(AbstractNotifier):
         clients=self.data_access.getCropProductionOwners(crop_production_id)
         crop_production_name = self.data_access.getCropProductionName(crop_production_id)
         # récupérer le nom de la maladie 
-        body= "Attention Il y a un risque de "+ `disease_name`+" dans votre culture "+`crop_production_name`+" avec un taux de "+`risk_rate`
+        body= "Attention Il y a un risque de "+ disease_name+" dans votre culture "+crop_production_name+" avec un taux de "+str(risk_rate)
         
         # envoi de l'alerte à tous les clients concernés
         for client in clients:
@@ -42,3 +42,5 @@ class EmailNotifier(AbstractNotifier):
             print 'Email sent!'
         except:  
             print 'Something went wrong...'
+
+EmailNotifier().notify(7,"FHB",0.78)

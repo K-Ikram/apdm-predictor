@@ -11,7 +11,7 @@ class SMSNotifier(AbstractNotifier):
         clients=self.data_access.getCropProductionOwners(crop_production_id)
         crop_production_name = self.data_access.getCropProductionName(crop_production_id)
         # récupérer le nom de la maladie 
-        msgtext= "Attention Il y a un risque de "+ `disease_name`+" dans votre culture "+`crop_production_name`+" avec un taux de "+`risk_rate`
+        msgtext= "Attention Il y a un risque de "+ disease_name+" dans votre culture "+crop_production_name+" avec un taux de "+str(risk_rate)
         print msgtext
         # envoi de l'alerte à tous les clients concernés
         for client in clients:
@@ -25,3 +25,4 @@ class SMSNotifier(AbstractNotifier):
                 
                 print "sms sent"
             else: print "sms notif are not activated"
+

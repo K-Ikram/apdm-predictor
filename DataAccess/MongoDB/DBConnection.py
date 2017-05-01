@@ -8,7 +8,7 @@ class DBConnection(object):
     def get_collection(self,name):
         if(not self.db):
             self.db = MongoClient('localhost', 8080)['apdm']
-            print "Connection to MongoDB"
+            print "Connection to MongoDB Server"
         return self.db[name]
     
     def close(self):
