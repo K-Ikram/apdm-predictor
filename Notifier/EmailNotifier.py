@@ -6,8 +6,8 @@ from AbstractNotifier import AbstractNotifier
     
 class EmailNotifier(AbstractNotifier):
 
-    gmail_user = 'username'  
-    gmail_password = 'password'
+    gmail_user = 'sarra93bouhenni'  
+    gmail_password = '21111987sarra'
 
     sent_from = 'apdm@gmail.com'  
     subject = "Notification envoyée par la plateforme APDM"

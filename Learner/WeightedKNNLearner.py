@@ -15,15 +15,18 @@ class WeightedKNNLearner(AbstractLearner):
         self.classifier = WeightedKNN.getInstance()
 
     def penalize(self, date_occurrence, disease_name, crop_production_id):
-
+        print "Penalize process launched"
         if(self.isPenalizeAllowed(disease_name)):
-            prediction = self.learning_data_access.getPrediction(date_occurrence, disease_name, crop_production_id)
+            prediction = self.learning_data_access.getPrediction(date_occurrence,
+            disease_name, crop_production_id)
             if(prediction is not None):
-                neighbors = self.classifier.getNeighbors(prediction["features"],disease_name,False)
+                neighbors = self.classifier.getNeighbors(prediction["features"],
+                disease_name,False)
                 for neighbor in neighbors:
                     if(neighbor[-2]==prediction["class"]):
                         new_weight = math.pow(neighbor[-3],2)/2
-                        self.learning_data_access.updateTrainingSetElementWeight(neighbor[-1], new_weight)
+                        self.learning_data_access.updateTrainingSetElementWeight(
+                        neighbor[-1], new_weight)
 
                 self.learning_data_access.updatePredictionState(prediction["_id"])
                 # supprimer les elements non partinents de l'ensemble d'apprentissage
@@ -78,17 +81,20 @@ class WeightedKNNLearner(AbstractLearner):
         return True
 
     def reward(self, date_occurrence, disease_name, crop_production_id):
-
+        print "Reward process launched"
         if(self.isRewardAllowed(disease_name)):
-            prediction = self.learning_data_access.getPrediction(date_occurrence, disease_name, crop_production_id)
+            prediction = self.learning_data_access.getPrediction(date_occurrence,
+             disease_name, crop_production_id)
             if(prediction is not None):
-                neighbors = self.classifier.getNeighbors(prediction["features"],disease_name,False)
+                neighbors = self.classifier.getNeighbors(prediction["features"],
+                disease_name,False)
                 for neighbor in neighbors:
                     #print neighbor[-3], "weight"
                     if(neighbor[-2]==prediction["class"]):
                         new_weight = 2- math.pow(neighbor[-3]-2,2)/2
                         #print neighbor[-1], "_id"
-                        self.learning_data_access.updateTrainingSetElementWeight(neighbor[-1], new_weight)
+                        self.learning_data_access.updateTrainingSetElementWeight(
+                        neighbor[-1], new_weight)
 
                 self.learning_data_access.updatePredictionState(prediction["_id"])
                 self.learning_data_access.addTrainingSetElement(prediction)
@@ -104,10 +110,25 @@ class WeightedKNNLearner(AbstractLearner):
         training_set_size = self.learning_data_access.getTrainingSetSize(disease_name)
         self.learning_data_access.updateParameter(disease_name,"k",r*training_set_size)
         self.learning_data_access.updateParameter(disease_name,"l",TA*training_set_size)
+        self.generateNewKDTree(disease_name)
+        print "Classifier updated"
+
+    def generateNewKDTree(self, disease_name):
+        trainingSet=self.learningDataAccess.getTrainingSet(disease_name)
+        data = np.array(trainingSet)[:,0]
+        data = list(data)
+        tree = KDTree(data)
+        if(tree is not None):
+            self.learningDataAccess.saveKDTree(disease_name,tree)
+            print "New KDTree generated and stored"
+        print "No KDTree could be generated"
 
     def rewardTrueNegatives(self):
+        print "Rewarding true negatives"
         diseases_param = self.learning_data_access.getDiseasesParameters()
         for d in diseases_param:
-            predictions = self.learning_data_access.getNonTreatedPredictions(d["disease"],d["tn_period"])
+            predictions = self.learning_data_access.getNonTreatedPredictions(
+            d["disease"],d["tn_period"])
             for prediction in predictions:
-                self.reward(prediction["prediction_date"],prediction["disease"],prediction["crop_production"])
+                self.reward(prediction["prediction_date"],prediction["disease"],
+                prediction["crop_production"])

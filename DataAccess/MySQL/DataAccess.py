@@ -56,12 +56,11 @@ class DataAccess(AbstractDataAccess):
     def getMeasures(self, cropProductionID, measureType, duration):
         measures =[]
         sensors = self.getSensors(cropProductionID,measureType)
-
         query = "(SELECT measure.measure_value FROM measure where measure.sensor_id = %s and timestampdiff(SECOND, measure.measure_timestamp , now()) < %s) order by measure_timestamp DESC"
-
         if(len(sensors)>0) :
             self.cursor.execute(query, (sensors[0],duration*3600*24))
             for measure in self.cursor.fetchall() :
                 measures.append(float(measure[0]))
-
+        else:
+            print "there are no sensors related to this crop"
         return measures

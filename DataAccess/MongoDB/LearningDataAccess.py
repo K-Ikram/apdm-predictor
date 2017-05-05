@@ -1,8 +1,16 @@
 # -*- coding: utf-8 -*-
 from DBConnection import DBConnection
 from AbstractLearningDataAccess import AbstractLearningDataAccess
-from datetime import datetime
+import datetime
 import time
+import sys
+import cPickle
+from scipy.spatial import kdtree
+# patch module-level attribute to enable pickle to work
+kdtree.node = kdtree.KDTree.node
+kdtree.leafnode = kdtree.KDTree.leafnode
+kdtree.innernode = kdtree.KDTree.innernode
+sys.setrecursionlimit(10000)
 
 class LearningDataAccess(AbstractLearningDataAccess):
     learningdDataAccess = None
@@ -17,12 +25,15 @@ class LearningDataAccess(AbstractLearningDataAccess):
         self.training_set_collection = DBConnection.get_collection('dataset')
         self.prediction_collection = DBConnection.get_collection('prediction')
         self.parameters_collection = DBConnection.get_collection('parameters')
+        self.kdtree_collection = DBConnection.get_collection('kdtree')
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         DBConnection.close()
+
 ######################################
 #  ACCESS TO TRAINING SET COLLECTION
 ######################################
+
     def removeUnusefulElements(self,disease_name):
         s= self.getParameter(disease_name,"s")
 
@@ -88,7 +99,7 @@ class LearningDataAccess(AbstractLearningDataAccess):
 
     def getTrainingSet(self,disease_name) :
         training_set = []
-        cursor = self.training_set_collection.find({"disease":disease_name})
+        cursor = self.training_set_collection.find({"disease":disease_name}).limit(100)
         for document in cursor :
             training_set.append((document["features"], document["weight"],
                                     document["class"], document["_id"]))
@@ -111,7 +122,7 @@ class LearningDataAccess(AbstractLearningDataAccess):
     def addPrediction(self, prediction, CropProductionID, disease_name):
         vector = prediction[0:-2]
         result = self.prediction_collection.insert_one(
-            {"prediction_date":datetime.now().replace(second=0,microsecond=0),
+            {"prediction_date":datetime.datetime.now().replace(second=0,microsecond=0),
                 "disease":disease_name,
                 "crop_production":int(CropProductionID),
                 "features":vector,
@@ -212,3 +223,20 @@ class LearningDataAccess(AbstractLearningDataAccess):
         for doc in cursor:
             diseases.append({"disease":doc["disease"],"tn_period":doc["tn_period"]})
         return diseases
+
+######################################
+#  ACCESS TO KD TREE COLLECTION
+######################################
+
+    def getKDTree(self,disease_name):
+        doc = self.kdtree_collection.find_one()
+        if(doc is not None):
+            # deserialize the mongodb object
+            tree = cPickle.loads(str(doc["kdtree"]))
+            print "KDTree restored from database"
+            return tree
+
+    def saveKDTree(self,disease_name, tree):
+        raw = cPickle.dumps(tree)
+        result = self.kdtree_collection.insert_one({"disease":disease_name, "kdtree":raw})
+        return result

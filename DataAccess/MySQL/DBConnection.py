@@ -6,7 +6,7 @@ class DBConnection():
     hostname = 'localhost'
     username = 'root'
     password = ''
-    database = 'apdm'
+    database = 'apdmdb'
     db = None
     cursor  = None
         

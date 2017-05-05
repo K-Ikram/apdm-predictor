@@ -5,12 +5,12 @@ from PotatoLateBlightPredictor import PotatoLateBlightPredictor
 
 
 class ForcastingLauncher:
-       
+
     def createPredictor(self,disease_id):
         if(disease_id==1):
             return FusariumHeadBlightPredictor()
         if(disease_id==2):
-            return PotatoLateBlightPredictor()     
+            return PotatoLateBlightPredictor()
 
     def launchDiseaseForecasting(self,disease_id):
         data_access =DataAccess.getInstance()
@@ -22,5 +22,3 @@ class ForcastingLauncher:
         for cropProduction in cropProductions:
             predictor.predictDisease(cropProduction)
         return "fire"
-
-ForcastingLauncher().launchDiseaseForecasting(1)
