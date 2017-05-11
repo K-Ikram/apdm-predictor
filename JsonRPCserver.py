@@ -26,6 +26,16 @@ def getRiskRates(crop_production, disease):
     print risk_rates
     return risk_rates
 
+def getCurrentRiskRates(params):
+    response=[]
+    for param in params:
+        risk_rates =[]
+        for disease in param['diseases']:
+            last_risk = LearningDataAccess.getInstance().getLastRiskRate(param['crop_production'], disease)
+            risk_rates.append(last_risk)
+        response.append(risk_rates)
+    return response
+
 def launchDiseaseForecasting(disease_id):
     print "launched disease forcasting for : ", disease_id
     ForcastingLauncher().launchDiseaseForecasting(disease_id)
@@ -48,9 +58,11 @@ server.set_notification_pool(notif_pool)
 # Register methods
 # method for launching disease forecasting every t period
 server.register_function(launchDiseaseForecasting)
-# methods for reward and penalize 
+# methods for reward and penalize
 server.register_function(getLastRiskRate)
 server.register_function(getRiskRates)
+server.register_function(getCurrentRiskRates)
+
 # methods related learning scenario
 server.register_function(penalize)
 server.register_function(reward)

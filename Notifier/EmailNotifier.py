@@ -5,10 +5,10 @@ import smtplib
 from AbstractNotifier import AbstractNotifier
     
 class EmailNotifier(AbstractNotifier):
-
-    gmail_user = 'sarra93bouhenni'  
-    gmail_password = '21111987sarra'
-
+    email_host = 'smtp.gmail.com'
+    email_port = 465
+    gmail_user = 'username'  
+    gmail_password = 'password'
     sent_from = 'apdm@gmail.com'  
     subject = "Notification envoyée par la plateforme APDM"
     to=['cs_bouhenni@esi.dz']
@@ -33,7 +33,7 @@ class EmailNotifier(AbstractNotifier):
           ])
 
         try:  
-            server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+            server = smtplib.SMTP_SSL(self.email_host, self.email_port)
             server.ehlo()
             server.login(self.gmail_user, self.gmail_password)
             server.sendmail(self.sent_from, self.to, msg)
