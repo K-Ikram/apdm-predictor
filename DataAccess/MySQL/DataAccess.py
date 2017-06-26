@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from AbstractDataAccess import AbstractDataAccess
 from DBConnection import DBConnection
 

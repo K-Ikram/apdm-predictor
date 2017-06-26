@@ -4,14 +4,12 @@ Created on Thu Feb 16 15:12:41 2017
 
 @author: BOUEHNNI
 """
-import math
 import operator
 from AbstractClassifier import AbstractClassifier
 from DataAccess.MongoDB.LearningDataAccess import LearningDataAccess
 
 import sys
 from scipy.spatial import KDTree
-import cPickle
 import numpy as np
 from scipy.spatial import kdtree
 # patch module-level attribute to enable pickle to work
@@ -71,21 +69,27 @@ class WeightedKNN(AbstractClassifier):
         trainingSet=self.learningDataAccess.getTrainingSet(disease_name)
         data = np.array(trainingSet)[:,0]
         data = list(data)
+        
         tree = self.learningDataAccess.getKDTree(disease_name)
         # récupérer larbre kd associé à cet ensemble d'apprentissage
         # s'il n'est pas stocké dans la BDD ==> construire un nouvel arbre
         # puis le stocker
         if(tree is None):
             tree = KDTree(data)
+            print "i created a new tree from dataset"
             self.learningDataAccess.saveKDTree(disease_name,tree)
         else:
             print tree
 
         if(is_k):
             param = self.learningDataAccess.getParameter(disease_name,"k")
+            print "k", param
         else:
             param = self.learningDataAccess.getParameter(disease_name,"l")
+            print "l", param
+
         distances, indices=tree.query(vecteurC,k=param)
+
         print "neighbors: distances, indices",distances, indices,"\n"
 
         neighbors = []

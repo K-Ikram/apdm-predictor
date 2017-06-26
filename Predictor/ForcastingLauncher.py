@@ -13,6 +13,7 @@ class ForcastingLauncher:
             return PotatoLateBlightPredictor()
 
     def launchDiseaseForecasting(self,disease_id):
+        predictions =[]
         data_access =DataAccess.getInstance()
         predictor = self.createPredictor(disease_id)
         # retrieve current crop productions
@@ -20,5 +21,6 @@ class ForcastingLauncher:
         print "crop productions: " , cropProductions
         # predict disease for each crop production
         for cropProduction in cropProductions:
-            predictor.predictDisease(cropProduction)
-        return "fire"
+            prediction = predictor.predictDisease(cropProduction)
+            predictions.append(prediction)
+        return predictions

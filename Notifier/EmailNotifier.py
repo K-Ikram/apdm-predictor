@@ -9,9 +9,9 @@ class EmailNotifier(AbstractNotifier):
     email_port = 465
     gmail_user = 'username'  
     gmail_password = 'password'
-    sent_from = 'apdm@gmail.com'  
+    sent_from = 'safecrop@aitech.com'  
     subject = "Notification envoyée par la plateforme APDM"
-    to=['cs_bouhenni@esi.dz']
+    to=[]
 
     def notify(self, crop_production_id,disease_name, risk_rate):
         # récupèrer les clients concernés par l'alerte
@@ -42,5 +42,3 @@ class EmailNotifier(AbstractNotifier):
             print 'Email sent!'
         except:  
             print 'Something went wrong...'
-
-EmailNotifier().notify(7,"FHB",0.78)

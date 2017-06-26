@@ -21,6 +21,8 @@ class FusariumHeadBlightPredictor(AbstractPredictor):
         vectCar = self.calculateFeatures(crop_production_id) # calculer le vecteur caractéristique
         # vectCar: [temp_duration, humidity_avg, rainfall_duration, resultat, risque de fusariose]
         print  "vecteur caracteristique ", vectCar
+        if(vectCar is None):
+            return None;
 
         classifier = WeightedKNN.getInstance()
 
@@ -31,8 +33,9 @@ class FusariumHeadBlightPredictor(AbstractPredictor):
         print "risque de fusariose =",risk_rate
         if(risk_rate>=0.5):
             self.data_access.addAlert(crop_production_id, 1, risk_rate)
-            self.sms_notifier.notify(crop_production_id, "Fusariose du blé",risk_rate)
-
+            #self.sms_notifier.notify(crop_production_id, "Fusariose du blé",risk_rate)
+            self.email_notifier.notify(crop_production_id, "Fusariose du blé",risk_rate)
+        return prediction
 
     def calculateFeatures(self,crop_production_id):
         # calculer le vecteur caractéristique qui correspond à la fusariose de blé
@@ -41,10 +44,11 @@ class FusariumHeadBlightPredictor(AbstractPredictor):
                                                   # température entre 9 et 30°C
         aveHum = self.calculateAveHum(crop_production_id)  # calculer l'humidité relative moyenne
         periodRain = self.calculateRainDuration(crop_production_id) # calculer la durée de la période des précipitations
-
+        if(aveHum is None):
+            print "nan value"
+            return None
         # construire un vecteur caractéristique de 3 variables
         vectCar = [periodTemp,aveHum,periodRain]
-
         return vectCar
 
     def calculateTempDuration(self,crop_production_id):
@@ -57,7 +61,9 @@ class FusariumHeadBlightPredictor(AbstractPredictor):
 
     def calculateAveHum(self, crop_production_id):
         measures = self.data_access.getMeasures(crop_production_id,"humidity",7)
-        return np.mean(measures)
+        if(len(measures)>0):
+            return np.mean(measures)
+        return None
 
     def calculateRainDuration(self,crop_production_id):
         measures = self.data_access.getMeasures(crop_production_id,"rainfall",7)

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 from DBConnection import DBConnection
 from AbstractLearningDataAccess import AbstractLearningDataAccess
 import datetime
@@ -166,7 +167,7 @@ class LearningDataAccess(AbstractLearningDataAccess):
         for doc in cursor:
             predictions.append[doc]
             print doc
-
+            
         return predictions
 
     def updatePredictionState(self,prediction_id):
@@ -177,7 +178,7 @@ class LearningDataAccess(AbstractLearningDataAccess):
 
     def getRiskRates(self,crop_production, disease):
         predictions = []
-        cursor = self.prediction_collection.find({"crop_production":crop_production, "disease":disease}).sort("prediction_date",-1).limit(10)
+        cursor = self.prediction_collection.find({"crop_production":crop_production, "disease":disease}).limit(10)
         for doc in cursor:
             risk_rate = {
             "crop_production":doc["crop_production"],
@@ -229,7 +230,7 @@ class LearningDataAccess(AbstractLearningDataAccess):
 ######################################
 
     def getKDTree(self,disease_name):
-        doc = self.kdtree_collection.find_one()
+        doc = self.kdtree_collection.find_one({"disease":disease_name})
         if(doc is not None):
             # deserialize the mongodb object
             tree = cPickle.loads(str(doc["kdtree"]))
