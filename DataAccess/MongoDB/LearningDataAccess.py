@@ -100,7 +100,7 @@ class LearningDataAccess(AbstractLearningDataAccess):
 
     def getTrainingSet(self,disease_name) :
         training_set = []
-        cursor = self.training_set_collection.find({"disease":disease_name}).limit(100)
+        cursor = self.training_set_collection.find({"disease":disease_name})
         for document in cursor :
             training_set.append((document["features"], document["weight"],
                                     document["class"], document["_id"]))
