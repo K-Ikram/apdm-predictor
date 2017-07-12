@@ -7,7 +7,8 @@ class DBConnection(object):
     @classmethod
     def get_collection(self,name):
         if(not self.db):
-            self.db = MongoClient('localhost', 8080)['apdm']
+            client = MongoClient('mongodb://esi:esi@mongodb-esi.alwaysdata.net/esi_apdm', 27017)
+            self.db = client.esi_apdm
             print "Connection to MongoDB Server"
         return self.db[name]
     
