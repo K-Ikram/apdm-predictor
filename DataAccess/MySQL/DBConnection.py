@@ -3,10 +3,10 @@
 import MySQLdb
 
 class DBConnection():
-    hostname = 'mysql-esi.alwaysdata.net'
-    username = 'esi'
-    password = 'esi'
-    database = 'esi_apdm'
+    hostname = 'localhost'
+    username = 'root'
+    password = ''
+    database = 'APDMDB'
     db = None
     cursor  = None
         
